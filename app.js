@@ -7,7 +7,7 @@ var router = require('./router/index');
 app.set('views', path.join(__dirname, 'views'));
 app.engine('.html', require('ejs').__express);
 app.set('view engine', 'html');
-app.use(cors());
+app.use(cors({credentials: true, origin: 'http://localhost:3000'}));
 app.use(cookie());
 
 app.use('/',router);

@@ -19,7 +19,7 @@ router.post('/register',function(req,res){
         })
       }else{
         new UserModel({username,password:md5(password),type}).save(function(err,user){
-          res.cookie('userid',user._id,{maxAge:1000*60*60*24});
+          res.cookie('userid',user._id,{maxAge:1000*60*60*24*7});
           const data={username,type,id:user._id};
           res.json({
             code:0,
@@ -38,7 +38,7 @@ router.post('/login',function(req,res){
     const {username,password} = fields;
     UserModel.findOne({username,password:md5(password)},filter,function(err,user){
       if(user){
-        res.cookie('userid',user._id,{maxAge:1000*60*60*24});
+        res.cookie('userid',user._id,{maxAge:1000*60*60*24*7});
         res.json({
           code:0,
           data:user
@@ -53,5 +53,31 @@ router.post('/login',function(req,res){
     
   });
 })
+
+router.post('/update',function(req,res){
+  const userid= req.cookies.userid;
+  if(!userid){
+    res.json({code:1,msg:'请先登录!'})
+    return;
+  }
+  var form = new formidable.IncomingForm()
+  form.parse(req, function(err, fields, files) {
+    UserModel.findByIdAndUpdate(
+      {_id:userid},
+      fields,
+      function(error,oldUser){
+        const {_id,username,type} = oldUser;
+        const resData = Object.assign(fields,{_id,username,type})
+        if(!oldUser){
+          res.clearCookie('userid')
+          res.json({code:1,msg:'请先登录!'})
+        }else{
+          res.json({code:0,data:resData})
+        }
+      }
+    )
+  });
+})
+
 
 module.exports=router;
