@@ -3,7 +3,7 @@ var router = express.Router();
 var formidable = require('formidable');
 var md5 = require('blueimp-md5');
 
-const filter = { password: 0, _v: 0 };
+const filter = { password: 0, __v: 0 };
 
 const { UserModel } = require('../models/index');
 
@@ -85,10 +85,17 @@ router.get('/user', function (req, res) {
     res.json({ code: 1, msg: '请先登录!' })
     return;
   }
-  UserModel.findOne({_id:userid},filter,function(err,user){
-    res.send({code:0,data:user});
+  UserModel.findOne({ _id: userid }, filter, function (err, user) {
+    res.json({ code: 0, data: user });
   })
 
+})
+
+router.get('/userlist', function (req, res) {
+  const { type } = req.query;
+  UserModel.find({ type }, filter, function (err, users) {
+    res.json({ code: 0, data: users });
+  })
 })
 
 
