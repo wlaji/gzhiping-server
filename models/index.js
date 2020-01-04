@@ -20,3 +20,34 @@ const userSchema = mongoose.Schema({
 const UserModel=mongoose.model('user',userSchema);
 
 exports.UserModel=UserModel;
+
+
+const chatSchema = mongoose.Schema({
+  from:{//发送用户的id
+    type:String,
+    required:true
+  },
+  to:{//接受用户的id
+    type:String,
+    required:true
+  },
+  chat_id:{//fron与to组成的字符串
+    type:String,
+    required:true
+  },
+  content:{//内容
+    type:String,
+    required:true
+  },
+  read:{//标识 是否已读
+    type:Boolean,
+    default:false,
+  },
+  create_time:{
+    type:Number
+  }
+})
+
+const ChatModel=mongoose.model('chat',chatSchema);
+
+exports.ChatModel=ChatModel;

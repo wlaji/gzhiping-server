@@ -1,14 +1,14 @@
-var express = require('express');
-var router = express.Router();
-var formidable = require('formidable');
-var md5 = require('blueimp-md5');
+let express = require('express');
+let router = express.Router();
+let formidable = require('formidable');
+let md5 = require('blueimp-md5');
 
 const filter = { password: 0, __v: 0 };
 
-const { UserModel } = require('../models/index');
+const { UserModel,ChatModel } = require('../models/index');
 
 router.post('/register', function (req, res) {
-  var form = new formidable.IncomingForm()
+  let form = new formidable.IncomingForm()
   form.parse(req, function (err, fields, files) {
     const { username, password, type } = fields;
     UserModel.findOne({ username }, function (err, user) {
@@ -33,7 +33,7 @@ router.post('/register', function (req, res) {
 })
 
 router.post('/login', function (req, res) {
-  var form = new formidable.IncomingForm()
+  let form = new formidable.IncomingForm()
   form.parse(req, function (err, fields, files) {
     const { username, password } = fields;
     UserModel.findOne({ username, password: md5(password) }, filter, function (err, user) {
@@ -60,7 +60,7 @@ router.post('/update', function (req, res) {
     res.json({ code: 1, msg: '请先登录!' })
     return;
   }
-  var form = new formidable.IncomingForm()
+  let form = new formidable.IncomingForm()
   form.parse(req, function (err, fields, files) {
     UserModel.findByIdAndUpdate(
       { _id: userid },
@@ -98,5 +98,31 @@ router.get('/userlist', function (req, res) {
   })
 })
 
+
+router.get('/msglist', function (req, res) {
+  const userid = req.cookies.userid;
+  UserModel.find(function(err,userDocs){
+    const users={};
+    userDocs.forEach(item=>{
+      users[item._id] = {username:item.username,header:item.header}
+    })
+
+    ChatModel.find({'$or':[{from:userid},{to:userid}]},filter,function(err,chatMsgs){
+      res.json({code:0,data:{users,chatMsgs}})
+    })
+  })
+})
+
+//修改指定数据为已读
+router.post('/readmsg', function (req, res) {
+  let form = new formidable.IncomingForm()
+  form.parse(req, function (err, fields, files) {
+    const { from } = fields;
+    const to = req.cookies.userid;
+    ChatModel.update({from,to,read:false},{read:true},{multi:true},function(err,doc){
+      res.json({code:0,data:doc.nModified})
+    })
+  });
+})
 
 module.exports = router;
