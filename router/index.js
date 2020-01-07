@@ -119,7 +119,7 @@ router.post('/readmsg', function (req, res) {
   form.parse(req, function (err, fields, files) {
     const { from } = fields;
     const to = req.cookies.userid;
-    ChatModel.update({from,to,read:false},{read:true},{multi:true},function(err,doc){
+    ChatModel.updateMany({from,to,read:false},{read:true},{multi:true},function(err,doc){
       res.json({code:0,data:doc.nModified})
     })
   });
